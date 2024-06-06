@@ -8,6 +8,7 @@ Auto Claim Wat Point from gamee
 
 - [GameeTod](#gameetod)
 - [Table of Contents](#table-of-contents)
+- [Feature](#feature)
 - [Register ?](#register-)
 - [How to Use](#how-to-use)
 - [Video Guide to Get Data](#video-guide-to-get-data)
@@ -16,6 +17,11 @@ Auto Claim Wat Point from gamee
 - [Discussion](#discussion)
 - [Support](#support)
 - [Thank you \< 3](#thank-you--3)
+
+# Feature
+
+- [x] Auto Claim
+- [x] Support Multi Account
 
 # Register ?
 
