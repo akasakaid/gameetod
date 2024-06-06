@@ -7,3 +7,5 @@ sessions
 *.txt
 !data.txt
 *.log
+!uuid.json
+!requirements.txt
