@@ -33,11 +33,11 @@ Ask u friend for invitation code !
 
 2. Clone this repository
    ```shell
-   git clone https://github.com/akasakaid/blumtod.git
+   git clone https://github.com/akasakaid/gameetod.git
    ```
-3. Go to blumtod
+3. Go to gameetod
    ```
-   cd blumtod
+   cd gameetod
    ```
 4. Install python library
    
