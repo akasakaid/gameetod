@@ -17,6 +17,7 @@ hijau = Fore.LIGHTGREEN_EX
 kuning = Fore.LIGHTYELLOW_EX
 biru = Fore.LIGHTBLUE_EX
 reset = Style.RESET_ALL
+hitam = Fore.LIGHTBLACK_EX
 
 
 class Gamee:
@@ -59,7 +60,7 @@ class Gamee:
 
     def log(self, message):
         now = now = datetime.now().isoformat(" ").split(".")[0]
-        print(f"{biru}[{now}] {message}")
+        print(f"{hitam}[{now}] {message}")
 
     def countdown(self, t):
         while t:
@@ -160,6 +161,7 @@ class Gamee:
                 self.log(f"{hijau}reward spin : {putih}{reward} {reward_type}")
 
         if use_ticket_to_spin:
+            self.log(f'{biru}start spin using ticket !')
             while True:
                 if tickets < spin_using_ticket_price:
                     self.log(f'{kuning}not enough tickets for spin !')
@@ -177,6 +179,8 @@ class Gamee:
                 daily_spin = res.json()["result"]["dailyReward"]["spinsCountAvailable"]
                 spin_using_ticket_price = res.json()['result']['dailyReward']['dailyRewardBonusSpinsPriceTickets']
                 tickets = res.json()['user']['tickets']['count']
+                self.log(f'{hijau}available ticket : {putih}{tickets}')
+                self.log(f'{hijau}price to spin : {putih}{spin_using_ticket_price} {hijau}ticket')
 
     def gamee_mining_page(self, access_token, uuid):
         headers = {
