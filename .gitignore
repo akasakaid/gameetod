@@ -9,3 +9,5 @@ sessions
 *.log
 !uuid.json
 !requirements.txt
+!config.json
+!tokens.json
