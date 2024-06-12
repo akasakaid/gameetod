@@ -11,6 +11,10 @@ Auto Claim Wat Point from gamee
 - [Feature](#feature)
 - [Register ?](#register-)
 - [How to Use](#how-to-use)
+  - [Windows](#windows)
+  - [Linux](#linux)
+  - [Termux](#termux)
+- [How to Get Data](#how-to-get-data)
 - [Video Guide to Get Data](#video-guide-to-get-data)
 - [Javascript Command to Get Telegram Data for Desktop](#javascript-command-to-get-telegram-data-for-desktop)
 - [Run for 24/7](#run-for-247)
@@ -21,6 +25,8 @@ Auto Claim Wat Point from gamee
 # Feature
 
 - [x] Auto Claim
+- [x] Auto Daily Spin
+- [x] Spin Using Ticket
 - [x] Support Multi Account
 
 # Register ?
@@ -29,42 +35,108 @@ Ask u friend for invitation code !
 
 # How to Use
 
-1. Make sure your computer was installed python and git.
+## Windows 
+
+1. Make sure you computer was installed python and git.
+   
+   python site : [https://python.org](https://python.org)
+   
+   git site : [https://git-scm.com/](https://git-scm.com/)
 
 2. Clone this repository
    ```shell
    git clone https://github.com/akasakaid/gameetod.git
    ```
-3. Go to gameetod
+
+3. goto gameetod directory
    ```
    cd gameetod
    ```
-4. Install python library
-   
-   Windows
-   ```
-   pip install -r requirements.txt
-   ```
 
-   or 
-
+4. install the require library
    ```
    python -m pip install -r requirements.txt
    ```
 
-   Linux
-
+5. fill the `data.txt` file with your data, how to get data you can refer to [How to Get Data](#how-to-get-data)
+6. execute the main program 
    ```
-   pip3 install -r requirements.txt
+   python bot.py
    ```
 
-   or
+## Linux
 
+1. Make sure you computer was installed python and git.
+   
+   python
+   ```shell
+   sudo apt install python3 python3-pip
+   ```
+   git
+   ```shell
+   sudo apt install git
+   ```
+
+2. Clone this repository
+   
+   ```shell
+   git clone https://github.com/akasakaid/gameetod.git
+   ```
+
+3. goto gameetod directory
+
+   ```shell
+   cd gameetod
+   ```
+
+4. Install the require library
+   
    ```
    python3 -m pip install -r requirements.txt
    ```
 
-5. Get Telegram data
+5. fill the `data.txt` file with your data, how to get data you can refer to [How to Get Data](#how-to-get-data)
+6. execute the main program 
+   ```
+   python bot.py
+   ```
+
+## Termux
+
+1. Make sure you termux was installed python and git.
+   
+   python
+   ```
+   pkg install python
+   ```
+
+   git
+   ```
+   pkg install git
+   ```
+
+2. Clone this repository
+   ```shell
+   git clone https://github.com/akasakaid/gameetod.git
+   ```
+
+3. goto gameetod directory
+   ```
+   cd gameetod
+   ```
+
+4. install the require library
+   ```
+   python -m pip install -r requirements.txt
+   ```
+
+5. fill the `data.txt` file with your data, how to get data you can refer to [How to Get Data](#how-to-get-data)
+6. execute the main program 
+   ```
+   python bot.py
+   ```
+
+# How to Get Data
    
    1. Active web inspecting in telegram app, How to activate follow the video [https://youtu.be/NYxHmck_GjE](https://youtu.be/NYxHmck_GjE)
    2. Goto gamee bot and open the apps
@@ -85,20 +157,6 @@ Ask u friend for invitation code !
    ```
    1.query_id=xxxxxxxxxx&user=xxxxxxfirst_namexxxxxlast_namexxxxxxxusernamexxxxxxxlanguage_codexxxxxxxallows_write_to_pmxxxxxxx&auth_date=xxxxxx&hash=xxxxxxxxxxxxxxxxxxxxx
    2.query_id=xxxxxxxxxx&user=xxxxxxfirst_namexxxxxlast_namexxxxxxxusernamexxxxxxxlanguage_codexxxxxxxallows_write_to_pmxxxxxxx&auth_date=xxxxxx&hash=xxxxxxxxxxxxxxxxxxxxx
-   ```
-
-6. Run the bot
-   
-   Windows
-   
-   ```shell
-   python bot.py
-   ```
-
-   Linux
-
-   ```shell
-   python3 bot.py
    ```
 
 # Video Guide to Get Data
@@ -125,6 +183,7 @@ If you have an question or something you can ask in here : [@sdsproject_chat](ht
 
 To support me you can buy me a coffee via website in below
 
+- Send IDR directly via QRIS : [https://s.id/nusanqr](https://s.id/nusanqr)
 - https://trakteer.id/fawwazthoerif/tip
 - https://sociabuzz.com/fawwazthoerif/tribe
 
