@@ -7,6 +7,7 @@ import requests
 from colorama import *
 from datetime import datetime
 from urllib.parse import unquote, quote
+from base64 import b64decode
 
 init(autoreset=True)
 
@@ -16,6 +17,7 @@ hijau = Fore.LIGHTGREEN_EX
 kuning = Fore.LIGHTYELLOW_EX
 biru = Fore.LIGHTBLUE_EX
 reset = Style.RESET_ALL
+
 
 class Gamee:
     def __init__(self):
@@ -32,11 +34,21 @@ class Gamee:
                 if data is None:
                     headers["content-length"] = "0"
                     res = requests.get(url, headers=headers)
-                    open(".http_request.log", "a").write(res.text + "\n")
+                    open("http_request.log", "a", encoding="utf-8").write(
+                        res.text + "\n"
+                    )
+                    if "<html>" in res.text:
+                        time.sleep(1)
+                        self.log(f"{kuning}failed get json response !")
+                        continue
                     return res
 
                 res = requests.post(url, headers=headers, data=data)
-                open(".http_request.log", "a", encoding="utf-8").write(res.text + "\n")
+                open("http_request.log", "a", encoding="utf-8").write(res.text + "\n")
+                if "<html>" in res.text:
+                    time.sleep(1)
+                    self.log(f"{kuning}failed get json response !")
+                    continue
                 return res
             except (
                 requests.exceptions.ConnectionError,
@@ -83,16 +95,90 @@ class Gamee:
         }
         while True:
             res = self.http(self.url_api_gamee, headers, json.dumps(data))
-            if "<html>" in res.text:
-                continue
-
             if "result" not in res.json().keys():
                 continue
 
             access_token = res.json()["result"]["tokens"]["authenticate"]
             nickname = res.json()["result"]["user"]["personal"]["nickname"]
             self.log(f"{hijau}login as : {putih}{nickname}")
+            tokens = json.loads(open("tokens.json", "r").read())
+            tokens[uuid] = access_token
+            open("tokens.json", "w").write(json.dumps(tokens, indent=4))
             return access_token
+
+    def gamee_spin(self, access_token, uuid):
+        headers = {
+            "authorization": f"Bearer {access_token}",
+            "Host": "api.service.gameeapp.com",
+            "Origin": "https://prizes.gamee.com",
+            "Referer": "https://prizes.gamee.com/",
+            "content-type": "text/plain;charset=UTF-8",
+            "User-Agent": "Mozilla/5.0 (Linux; Android 10; Redmi 4A / 5A Build/QQ3A.200805.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/86.0.4240.185 Mobile Safari/537.36",
+            "x-install-uuid": uuid,
+            "X-Requested-With": "org.telegram.messenger",
+        }
+        config = json.loads(open("config.json", "r").read())
+        use_ticket_to_spin = config["use_ticket_to_spin"]
+        daily_get_price = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": "dailyReward.getPrizes",
+                "method": "dailyReward.getPrizes",
+                "params": {},
+            }
+        )
+        daily_reward_claim_prize = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": "dailyReward.claimPrize",
+                "method": "dailyReward.claimPrize",
+                "params": {},
+            }
+        )
+        buy_spin_using_ticket = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": "dailyReward.buySpinUsingTickets",
+                "method": "dailyReward.buySpinUsingTickets",
+                "params": {},
+            }
+        )
+        res = self.http(self.url_api_gamee, headers, daily_get_price)
+        daily_spin = res.json()["result"]["dailyReward"]["spinsCountAvailable"]
+        spin_using_ticket_price = res.json()['result']['dailyReward']['dailyRewardBonusSpinsPriceTickets']
+        tickets = res.json()['user']['tickets']['count']
+        self.log(f'{hijau}available ticket : {putih}{tickets}')
+        self.log(f'{hijau}available free spin : {putih}{daily_spin}')
+        self.log(f'{hijau}price to spin : {putih}{spin_using_ticket_price} {hijau}ticket')
+        if daily_spin > 0:
+            for i in range(daily_spin):
+                res = self.http(self.url_api_gamee, headers, daily_reward_claim_prize)
+                reward_type = res.json()["result"]["reward"]["type"]
+                if reward_type == "money":
+                    key = "usdCents"
+                else:
+                    key = reward_type
+                reward = res.json()["result"]["reward"][key]
+                self.log(f"{hijau}reward spin : {putih}{reward} {reward_type}")
+
+        if use_ticket_to_spin:
+            while True:
+                if tickets < spin_using_ticket_price:
+                    self.log(f'{kuning}not enough tickets for spin !')
+                    return
+                res = self.http(self.url_api_gamee,headers,buy_spin_using_ticket)
+                res = self.http(self.url_api_gamee,headers,daily_reward_claim_prize)
+                reward_type = res.json()["result"]["reward"]["type"]
+                if reward_type == "money":
+                    key = "usdCents"
+                else:
+                    key = reward_type
+                reward = res.json()["result"]["reward"][key]
+                self.log(f"{hijau}reward spin : {putih}{reward} {reward_type}")
+                res = self.http(self.url_api_gamee, headers, daily_get_price)
+                daily_spin = res.json()["result"]["dailyReward"]["spinsCountAvailable"]
+                spin_using_ticket_price = res.json()['result']['dailyReward']['dailyRewardBonusSpinsPriceTickets']
+                tickets = res.json()['user']['tickets']['count']
 
     def gamee_mining_page(self, access_token, uuid):
         headers = {
@@ -119,61 +205,50 @@ class Gamee:
             "method": "miningEvent.startSession",
             "params": {"miningEventId": 7},
         }
-        while True:
-            res = self.http(self.url_api_gamee, headers, json.dumps(data))
-            if "<html>" in res.text:
-                continue
-            assets = res.json()["user"]["assets"]
-            for asset in assets:
-                cur = asset["currency"]["ticker"]
-                amount = asset["amountMicroToken"] / 1000000
-                self.log(f"{putih}balance : {hijau}{amount} {putih}{cur}")
-            mining = res.json()["result"]["miningEvent"]["miningUser"]
-            if mining is None:
-                self.log(f"{kuning}mining not started !")
-                headers["content-length"] = str(len(json.dumps(data_start_mining)))
-                while True:
-                    res = self.http(
-                        self.url_api_gamee, headers, json.dumps(data_start_mining)
-                    )
-                    if "<html>" in res.text:
-                        time.sleep(2)
-                        continue
-                    
-                    if "error" in res.json().keys():
-                        time.sleep(2)
-                        continue
+        res = self.http(self.url_api_gamee, headers, json.dumps(data))
+        assets = res.json()["user"]["assets"]
+        for asset in assets:
+            cur = asset["currency"]["ticker"]
+            amount = asset["amountMicroToken"] / 1000000
+            self.log(f"{putih}balance : {hijau}{amount} {putih}{cur}")
+        mining = res.json()["result"]["miningEvent"]["miningUser"]
+        if mining is None:
+            self.log(f"{kuning}mining not started !")
+            headers["content-length"] = str(len(json.dumps(data_start_mining)))
+            while True:
+                res = self.http(
+                    self.url_api_gamee, headers, json.dumps(data_start_mining)
+                )
+                if "error" in res.json().keys():
+                    time.sleep(2)
+                    continue
 
-                    if "miningEvent" in res.json()["result"]:
-                        self.log(f"{hijau}mining start successfully !")
-                        return
+                if "miningEvent" in res.json()["result"]:
+                    self.log(f"{hijau}mining start successfully !")
+                    return
 
-            end = mining["miningSessionEnded"]
-            earn = self.cv(mining["currentSessionMicroToken"])
-            mine = self.cv(mining["currentSessionMicroTokenMined"])
-            self.log(f"{putih}earn from mining : {hijau}{earn}")
-            self.log(f"{putih}current mining : {hijau}{mine}")
-            if end:
-                self.log(f"{kuning}mining has end !")
-                headers["content-length"] = str(len(json.dumps(data_start_mining)))
-                while True:
-                    res = self.http(
-                        self.url_api_gamee, headers, json.dumps(data_start_mining)
-                    )
-                    if "<html>" in res.text:
-                        time.sleep(2)
-                        continue
+        end = mining["miningSessionEnded"]
+        earn = self.cv(mining["currentSessionMicroToken"])
+        mine = self.cv(mining["currentSessionMicroTokenMined"])
+        self.log(f"{putih}max mining : {hijau}{earn}")
+        self.log(f"{putih}current mining : {hijau}{mine}")
+        if end:
+            self.log(f"{kuning}mining has end !")
+            headers["content-length"] = str(len(json.dumps(data_start_mining)))
+            while True:
+                res = self.http(
+                    self.url_api_gamee, headers, json.dumps(data_start_mining)
+                )
+                if "error" in res.json().keys():
+                    time.sleep(2)
+                    continue
 
-                    if "error" in res.json().keys():
-                        time.sleep(2)
-                        continue
+                if "miningEvent" in res.json()["result"]:
+                    self.log(f"{hijau}mining start successfully !")
+                    return
 
-                    if "miningEvent" in res.json()["result"]:
-                        self.log(f"{hijau}mining start successfully !")
-                        return
-
-            self.log(f"{kuning}mining is not over !")
-            return
+        self.log(f"{kuning}mining is not over !")
+        return
 
     def data_parsing(self, data):
         res = unquote(data)
@@ -184,6 +259,16 @@ class Gamee:
             data[y] = z
 
         return data
+
+    def token_checker(self, token):
+        header, payload, sign = token.split(".")
+        depayload = b64decode(payload + "==")
+        jeload = json.loads(depayload)
+        expired = jeload["exp"]
+        now = int(datetime.now().timestamp())
+        if now > int(expired):
+            return True
+        return False
 
     def main(self):
         banner = f"""
@@ -199,15 +284,19 @@ class Gamee:
         print(banner)
         while True:
             accounts = open("data.txt", "r").read().splitlines()
-            self.log(f'{hijau}account detected : {putih}{len(accounts)}')
+            self.log(f"{hijau}account detected : {putih}{len(accounts)}")
             if len(accounts) <= 0:
-                self.log(f'{merah}please add data account in data.txt')
+                self.log(f"{merah}please add data account in data.txt")
                 sys.exit()
+
             print(self.line)
             for account in accounts:
+                access_token = None
                 data_parse = self.data_parsing(account)
                 user = json.loads(data_parse["user"])
                 userid = user["id"]
+                first_name = user['first_name']
+                self.log(f'{hijau}login as {putih}{first_name}')
                 data = f"query_id={data_parse['query_id']}&user={quote(data_parse['user'])}&auth_date={data_parse['auth_date']}&hash={data_parse['hash']}"
                 uids = json.loads(open("uuid.json", "r").read())
                 if str(userid) not in uids.keys():
@@ -216,11 +305,20 @@ class Gamee:
                     open("uuid.json", "w").write(json.dumps(uids, indent=4))
                 else:
                     uid = uids[str(userid)]
-                access_token = self.gamee_login(data, uid)
+                tokens = json.loads(open("tokens.json", "r").read())
+                if uid not in tokens.keys():
+                    access_token = self.gamee_login(data, uid)
+                else:
+                    access_token = tokens[uid]
+                is_expired = self.token_checker(access_token)
+                if is_expired:
+                    access_token = self.gamee_login(data, uid)
+
+                res = self.gamee_spin(access_token, uid)
                 res = self.gamee_mining_page(access_token, uid)
                 print(self.line)
                 self.countdown(self.DEFAULT_INTERVAL)
-            
+
             self.countdown(self.DEFAULT_COUNTDOWN)
 
 
