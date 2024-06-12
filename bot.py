@@ -99,8 +99,6 @@ class Gamee:
                 continue
 
             access_token = res.json()["result"]["tokens"]["authenticate"]
-            nickname = res.json()["result"]["user"]["personal"]["nickname"]
-            self.log(f"{hijau}login as : {putih}{nickname}")
             tokens = json.loads(open("tokens.json", "r").read())
             tokens[uuid] = access_token
             open("tokens.json", "w").write(json.dumps(tokens, indent=4))
