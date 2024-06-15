@@ -1,3 +1,5 @@
 {
-    "use_ticket_to_spin": false
+    "countdown": 300,
+    "use_ticket_to_spin": false,
+    "max_use_ticket_to_spin": 100
 }
