@@ -76,6 +76,12 @@ class Gamee:
 
     def cv(self, data):
         return data / 1000000
+    
+    def load_config(self):
+        config = json.loads(open("config.json","r").read())
+        self.DEFAULT_COUNTDOWN = config['countdown']
+        self.USE_TICKET_TO_SPIN = config['use_ticket_to_spin']
+        self.MAX_USE_TICKET = config['max_use_ticket_to_spin']
 
     def gamee_login(self, tg_data, uuid):
         data = {
@@ -116,8 +122,6 @@ class Gamee:
             "x-install-uuid": uuid,
             "X-Requested-With": "org.telegram.messenger",
         }
-        config = json.loads(open("config.json", "r").read())
-        use_ticket_to_spin = config["use_ticket_to_spin"]
         daily_get_price = json.dumps(
             {
                 "jsonrpc": "2.0",
@@ -160,12 +164,17 @@ class Gamee:
                 reward = res.json()["result"]["reward"][key]
                 self.log(f"{hijau}reward spin : {putih}{reward} {reward_type}")
 
-        if use_ticket_to_spin:
+        if self.USE_TICKET_TO_SPIN:
             self.log(f'{biru}start spin using ticket !')
             while True:
                 if tickets < spin_using_ticket_price:
                     self.log(f'{kuning}not enough tickets for spin !')
                     return
+                
+                if spin_using_ticket_price > self.MAX_USE_TICKET:
+                    self.log(f'{kuning}max using ticket to spin reacted !')
+                    return
+                
                 res = self.http(self.url_api_gamee,headers,buy_spin_using_ticket)
                 res = self.http(self.url_api_gamee,headers,daily_reward_claim_prize)
                 reward_type = res.json()["result"]["reward"]["type"]
@@ -327,6 +336,7 @@ class Gamee:
 if __name__ == "__main__":
     try:
         app = Gamee()
+        app.load_config()
         app.main()
     except KeyboardInterrupt:
         sys.exit()
