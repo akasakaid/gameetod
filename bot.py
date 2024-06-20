@@ -3,10 +3,11 @@ import sys
 import json
 import uuid
 import time
+import argparse
 import requests
 from colorama import *
 from datetime import datetime
-from urllib.parse import unquote, quote
+from urllib.parse import unquote, quote,parse_qs
 from base64 import b64decode
 
 init(autoreset=True)
@@ -35,7 +36,7 @@ class Gamee:
                 if data is None:
                     headers["content-length"] = "0"
                     res = requests.get(url, headers=headers)
-                    open("http_request.log", "a", encoding="utf-8").write(
+                    open("http.log", "a", encoding="utf-8").write(
                         res.text + "\n"
                     )
                     if "<html>" in res.text:
@@ -45,7 +46,7 @@ class Gamee:
                     return res
 
                 res = requests.post(url, headers=headers, data=data)
-                open("http_request.log", "a", encoding="utf-8").write(res.text + "\n")
+                open("http.log", "a", encoding="utf-8").write(res.text + "\n")
                 if "<html>" in res.text:
                     time.sleep(1)
                     self.log(f"{kuning}failed get json response !")
@@ -77,11 +78,16 @@ class Gamee:
     def cv(self, data):
         return data / 1000000
     
-    def load_config(self):
-        config = json.loads(open("config.json","r").read())
-        self.DEFAULT_COUNTDOWN = config['countdown']
-        self.USE_TICKET_TO_SPIN = config['use_ticket_to_spin']
-        self.MAX_USE_TICKET = config['max_use_ticket_to_spin']
+    def load_config(self,config_file="config.json"):
+        try:
+            config = json.loads(open(config_file,"r").read())
+            self.DEFAULT_COUNTDOWN = config['countdown']
+            self.DEFAULT_INTERVAL = config['interval']
+            self.USE_TICKET_TO_SPIN = config['use_ticket_to_spin']
+            self.MAX_USE_TICKET = config['max_use_ticket_to_spin']
+        except json.decoder.JSONDecodeError:
+            self.log(f'{merah}failed to get you config, please check {config_file}')
+            sys.exit()
 
     def gamee_login(self, tg_data, uuid):
         data = {
@@ -146,50 +152,54 @@ class Gamee:
                 "params": {},
             }
         )
-        res = self.http(self.url_api_gamee, headers, daily_get_price)
-        daily_spin = res.json()["result"]["dailyReward"]["spinsCountAvailable"]
-        spin_using_ticket_price = res.json()['result']['dailyReward']['dailyRewardBonusSpinsPriceTickets']
-        tickets = res.json()['user']['tickets']['count']
-        self.log(f'{hijau}available ticket : {putih}{tickets}')
-        self.log(f'{hijau}available free spin : {putih}{daily_spin}')
-        self.log(f'{hijau}price to spin : {putih}{spin_using_ticket_price} {hijau}ticket')
-        if daily_spin > 0:
-            for i in range(daily_spin):
-                res = self.http(self.url_api_gamee, headers, daily_reward_claim_prize)
-                reward_type = res.json()["result"]["reward"]["type"]
-                if reward_type == "money":
-                    key = "usdCents"
-                else:
-                    key = reward_type
-                reward = res.json()["result"]["reward"][key]
-                self.log(f"{hijau}reward spin : {putih}{reward} {reward_type}")
+        try:
+            res = self.http(self.url_api_gamee, headers, daily_get_price)
+            daily_spin = res.json()["result"]["dailyReward"]["spinsCountAvailable"]
+            spin_using_ticket_price = res.json()['result']['dailyReward']['dailyRewardBonusSpinsPriceTickets']
+            tickets = res.json()['user']['tickets']['count']
+            self.log(f'{hijau}available ticket : {putih}{tickets}')
+            self.log(f'{hijau}available free spin : {putih}{daily_spin}')
+            self.log(f'{hijau}price to spin : {putih}{spin_using_ticket_price} {hijau}ticket')
+            if daily_spin > 0:
+                for i in range(daily_spin):
+                    res = self.http(self.url_api_gamee, headers, daily_reward_claim_prize)
+                    reward_type = res.json()["result"]["reward"]["type"]
+                    if reward_type == "money":
+                        key = "usdCents"
+                    else:
+                        key = reward_type
+                    reward = res.json()["result"]["reward"][key]
+                    self.log(f"{hijau}reward spin : {putih}{reward} {reward_type}")
 
-        if self.USE_TICKET_TO_SPIN:
-            self.log(f'{biru}start spin using ticket !')
-            while True:
-                if tickets < spin_using_ticket_price:
-                    self.log(f'{kuning}not enough tickets for spin !')
-                    return
-                
-                if spin_using_ticket_price > self.MAX_USE_TICKET:
-                    self.log(f'{kuning}max using ticket to spin reacted !')
-                    return
-                
-                res = self.http(self.url_api_gamee,headers,buy_spin_using_ticket)
-                res = self.http(self.url_api_gamee,headers,daily_reward_claim_prize)
-                reward_type = res.json()["result"]["reward"]["type"]
-                if reward_type == "money":
-                    key = "usdCents"
-                else:
-                    key = reward_type
-                reward = res.json()["result"]["reward"][key]
-                self.log(f"{hijau}reward spin : {putih}{reward} {reward_type}")
-                res = self.http(self.url_api_gamee, headers, daily_get_price)
-                daily_spin = res.json()["result"]["dailyReward"]["spinsCountAvailable"]
-                spin_using_ticket_price = res.json()['result']['dailyReward']['dailyRewardBonusSpinsPriceTickets']
-                tickets = res.json()['user']['tickets']['count']
-                self.log(f'{hijau}available ticket : {putih}{tickets}')
-                self.log(f'{hijau}price to spin : {putih}{spin_using_ticket_price} {hijau}ticket')
+            if self.USE_TICKET_TO_SPIN:
+                self.log(f'{biru}start spin using ticket !')
+                while True:
+                    if tickets < spin_using_ticket_price:
+                        self.log(f'{kuning}not enough tickets for spin !')
+                        return
+
+                    if spin_using_ticket_price > self.MAX_USE_TICKET:
+                        self.log(f'{kuning}max using ticket to spin reacted !')
+                        return
+
+                    res = self.http(self.url_api_gamee,headers,buy_spin_using_ticket)
+                    res = self.http(self.url_api_gamee,headers,daily_reward_claim_prize)
+                    reward_type = res.json()["result"]["reward"]["type"]
+                    if reward_type == "money":
+                        key = "usdCents"
+                    else:
+                        key = reward_type
+                    reward = res.json()["result"]["reward"][key]
+                    self.log(f"{hijau}reward spin : {putih}{reward} {reward_type}")
+                    res = self.http(self.url_api_gamee, headers, daily_get_price)
+                    daily_spin = res.json()["result"]["dailyReward"]["spinsCountAvailable"]
+                    spin_using_ticket_price = res.json()['result']['dailyReward']['dailyRewardBonusSpinsPriceTickets']
+                    tickets = res.json()['user']['tickets']['count']
+                    self.log(f'{hijau}available ticket : {putih}{tickets}')
+                    self.log(f'{hijau}price to spin : {putih}{spin_using_ticket_price} {hijau}ticket')
+        except KeyError as e:
+            self.log(f'{merah}something error, {e}')
+            return False
 
     def gamee_mining_page(self, access_token, uuid):
         headers = {
@@ -262,14 +272,7 @@ class Gamee:
         return
 
     def data_parsing(self, data):
-        res = unquote(data)
-        data = {}
-        for i in res.split("&"):
-            j = unquote(i)
-            y, z = j.split("=")
-            data[y] = z
-
-        return data
+        return {k: v[0] for k,v in parse_qs(data).items()}
 
     def token_checker(self, token):
         header, payload, sign = token.split(".")
@@ -289,15 +292,26 @@ class Gamee:
     {hijau}Github : {putih}@AkasakaID
     
         """
-        arg = sys.argv
-        if "noclear" not in arg:
+        arg = argparse.ArgumentParser()
+        arg.add_argument('--marinkitagawa',action="store_true")
+        arg.add_argument('--data',help="set custom file input data (default: data.txt)",default="data.txt")
+        arg.add_argument('--config',help="set custom config (default: config.json)",default="config.json")
+        args = arg.parse_args()
+        if args.marinkitagawa is False:
             os.system("cls" if os.name == "nt" else "clear")
+            
         print(banner)
+        
+        if not os.path.exists(args.data):
+            self.log(f"{merah} {args.data} is not found, input valid path file please !")
+            sys.exit()
+        
+        self.load_config(args.config)
         while True:
-            accounts = open("data.txt", "r").read().splitlines()
+            accounts = open(args.data, "r").read().splitlines()
             self.log(f"{hijau}account detected : {putih}{len(accounts)}")
             if len(accounts) <= 0:
-                self.log(f"{merah}please add data account in data.txt")
+                self.log(f"{merah}please add data account in {args.data}")
                 sys.exit()
 
             print(self.line)
@@ -336,7 +350,6 @@ class Gamee:
 if __name__ == "__main__":
     try:
         app = Gamee()
-        app.load_config()
         app.main()
     except KeyboardInterrupt:
         sys.exit()
