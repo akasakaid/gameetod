@@ -40,9 +40,11 @@ Ask u friend for invitation code !
 
 Here are some parameters that can be used in bot.py or the bot's main script
 
---data: serves to set custom input data (default: data.txt)
---config: serves to set a custom config file (default: config.json)
---marinkitagawa: serves to run the bot script without deleting the terminal / console display first.
+| parameter       | desctiption                                                                         |
+| --------------- | ----------------------------------------------------------------------------------- |
+| --data          | serves to set custom input data (default: data.txt)                                 |
+| --config        | serves to set a custom config file (default: config.json)                           |
+| --marinkitagawa | serves to run the bot script without deleting the terminal / console display first. |
 
 ## Windows 
 
