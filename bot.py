@@ -224,7 +224,7 @@ class Gamee:
             "jsonrpc": "2.0",
             "id": "miningEvent.startSession",
             "method": "miningEvent.startSession",
-            "params": {"miningEventId": 7},
+            "params": {"miningEventId":11,"code":"watprotocol"},
         }
         res = self.http(self.url_api_gamee, headers, json.dumps(data))
         assets = res.json()["user"]["assets"]
