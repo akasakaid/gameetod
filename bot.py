@@ -231,7 +231,7 @@ class Gamee:
             "id": "miningEvent.get",
             "method": "miningEvent.get",
             "params": {
-                "miningEventId": 7,
+                "miningEventId": 11,
             },
         }
         data_start_mining = {
