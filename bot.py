@@ -24,7 +24,7 @@ hitam = Fore.LIGHTBLACK_EX
 class Gamee:
     def __init__(self):
         self.peer = "gamee"
-        self.url_api_gamee = "https://api.service.gameeapp.com/"
+        self.url_api_gamee = "https://api.gamee.com/"
         self.ref = "ref_629438076"
         self.DEFAULT_COUNTDOWN = 2 * (60 * 60)
         self.DEFAULT_INTERVAL = 10
@@ -39,7 +39,7 @@ class Gamee:
                     open("http.log", "a", encoding="utf-8").write(
                         res.text + "\n"
                     )
-                    if "<html>" in res.text:
+                    if "<title>" in res.text:
                         time.sleep(1)
                         self.log(f"{kuning}failed get json response !")
                         continue
@@ -47,7 +47,7 @@ class Gamee:
 
                 res = requests.post(url, headers=headers, data=data)
                 open("http.log", "a", encoding="utf-8").write(res.text + "\n")
-                if "<html>" in res.text:
+                if "<title>" in res.text:
                     time.sleep(1)
                     self.log(f"{kuning}failed get json response !")
                     continue
@@ -99,7 +99,7 @@ class Gamee:
             "params": {"initData": tg_data},
         }
         headers = {
-            "Host": "api.service.gameeapp.com",
+            "Host": "api.gamee.com",
             "Origin": "https://prizes.gamee.com",
             "Referer": "https://prizes.gamee.com/",
             "content-type": "text/plain;charset=UTF-8",
@@ -122,7 +122,7 @@ class Gamee:
     def gamee_spin(self, access_token, uuid):
         headers = {
             "authorization": f"Bearer {access_token}",
-            "Host": "api.service.gameeapp.com",
+            "Host": "api.gamee.com",
             "Origin": "https://prizes.gamee.com",
             "Referer": "https://prizes.gamee.com/",
             "content-type": "text/plain;charset=UTF-8",
@@ -218,7 +218,7 @@ class Gamee:
     def gamee_mining_page(self, access_token, uuid):
         headers = {
             "authorization": f"Bearer {access_token}",
-            "Host": "api.service.gameeapp.com",
+            "Host": "api.gamee.com",
             "Origin": "https://prizes.gamee.com",
             "Referer": "https://prizes.gamee.com/",
             "content-type": "text/plain;charset=UTF-8",
