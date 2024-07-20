@@ -20,7 +20,6 @@ biru = Fore.LIGHTBLUE_EX
 reset = Style.RESET_ALL
 hitam = Fore.LIGHTBLACK_EX
 
-
 class Gamee:
     def __init__(self):
         self.peer = "gamee"
@@ -58,7 +57,7 @@ class Gamee:
                 self.log(f"{merah}connection error !")
 
     def log(self, message):
-        now = now = datetime.now().isoformat(" ").split(".")[0]
+        now = datetime.now().isoformat(" ").split(".")[0]
         print(f"{hitam}[{now}] {message}")
 
     def countdown(self, t):
@@ -126,92 +125,103 @@ class Gamee:
             "x-install-uuid": uuid,
             "X-Requested-With": "org.telegram.messenger",
         }
-        daily_get_price = json.dumps(
-            {
-                "jsonrpc": "2.0",
-                "id": "dailyReward.getPrizes",
-                "method": "dailyReward.getPrizes",
-                "params": {},
-            }
-        )
-        daily_reward_claim_prize = json.dumps(
-            {
-                "jsonrpc": "2.0",
-                "id": "dailyReward.claimPrize",
-                "method": "dailyReward.claimPrize",
-                "params": {},
-            }
-        )
-        buy_spin_using_ticket = json.dumps(
-            {
-                "jsonrpc": "2.0",
-                "id": "dailyReward.buySpinUsingTickets",
-                "method": "dailyReward.buySpinUsingTickets",
-                "params": {},
-            }
-        )
-        try:
-            res = self.http(self.url_api_gamee, headers, daily_get_price)
-            daily_spin = res.json()["result"]["dailyReward"]["spinsCountAvailable"]
-            spin_using_ticket_price = res.json()["result"]["dailyReward"][
-                "dailyRewardBonusSpinsPriceTickets"
-            ]
-            tickets = res.json()["user"]["tickets"]["count"]
-            self.log(f"{hijau}available ticket : {putih}{tickets}")
-            self.log(f"{hijau}available free spin : {putih}{daily_spin}")
-            self.log(
-                f"{hijau}price to spin : {putih}{spin_using_ticket_price} {hijau}ticket"
-            )
-            if daily_spin > 0:
-                for i in range(daily_spin):
-                    res = self.http(
-                        self.url_api_gamee, headers, daily_reward_claim_prize
-                    )
-                    reward_type = res.json()["result"]["reward"]["type"]
-                    if reward_type == "money":
-                        key = "usdCents"
-                    else:
-                        key = reward_type
-                    reward = res.json()["result"]["reward"][key]
-                    self.log(f"{hijau}reward spin : {putih}{reward} {reward_type}")
+        daily_get_price = json.dumps({
+            "jsonrpc": "2.0",
+            "id": "dailyReward.getPrizes",
+            "method": "dailyReward.getPrizes",
+            "params": {},
+        })
+        daily_reward_claim_prize = json.dumps({
+            "jsonrpc": "2.0",
+            "id": "dailyReward.claimPrize",
+            "method": "dailyReward.claimPrize",
+            "params": {},
+        })
+        buy_spin_using_ticket = json.dumps({
+            "jsonrpc": "2.0",
+            "id": "dailyReward.buySpinUsingTickets",
+            "method": "dailyReward.buySpinUsingTickets",
+            "params": {},
+        })
 
-            if self.USE_TICKET_TO_SPIN:
-                self.log(f"{biru}start spin using ticket !")
-                while True:
-                    if tickets < spin_using_ticket_price:
-                        self.log(f"{kuning}not enough tickets for spin !")
-                        return
+        while True:
+            try:
+                res = self.http(self.url_api_gamee, headers, daily_get_price)
+                daily_spin = res.json()["result"]["dailyReward"]["spinsCountAvailable"]
+                spin_using_ticket_price = res.json()["result"]["dailyReward"]["dailyRewardBonusSpinsPriceTickets"]
+                tickets = res.json()["user"]["tickets"]["count"]
 
-                    if spin_using_ticket_price > self.MAX_USE_TICKET:
-                        self.log(f"{kuning}max using ticket to spin reacted !")
-                        return
+                self.log(f"{hijau}available ticket : {putih}{tickets}")
+                self.log(f"{hijau}available free spin : {putih}{daily_spin}")
+                self.log(f"{hijau}price to spin : {putih}{spin_using_ticket_price} {hijau}ticket")
 
-                    res = self.http(self.url_api_gamee, headers, buy_spin_using_ticket)
-                    res = self.http(
-                        self.url_api_gamee, headers, daily_reward_claim_prize
-                    )
-                    reward_type = res.json()["result"]["reward"]["type"]
-                    if reward_type == "money":
-                        key = "usdCents"
-                    else:
-                        key = reward_type
-                    reward = res.json()["result"]["reward"][key]
-                    self.log(f"{hijau}reward spin : {putih}{reward} {reward_type}")
-                    res = self.http(self.url_api_gamee, headers, daily_get_price)
-                    daily_spin = res.json()["result"]["dailyReward"][
-                        "spinsCountAvailable"
-                    ]
-                    spin_using_ticket_price = res.json()["result"]["dailyReward"][
-                        "dailyRewardBonusSpinsPriceTickets"
-                    ]
-                    tickets = res.json()["user"]["tickets"]["count"]
-                    self.log(f"{hijau}available ticket : {putih}{tickets}")
-                    self.log(
-                        f"{hijau}price to spin : {putih}{spin_using_ticket_price} {hijau}ticket"
-                    )
-        except KeyError as e:
-            self.log(f"{merah}something error, {e}")
-            return False
+                # Handle free spins
+                if daily_spin > 0:
+                    for i in range(daily_spin):
+                        res = self.http(self.url_api_gamee, headers, daily_reward_claim_prize)
+                        reward_type = res.json()["result"]["reward"]["type"]
+                        key = "usdCents" if reward_type == "money" else reward_type
+                        reward = res.json()["result"]["reward"][key]
+                        self.log(f"{hijau}reward spin : {putih}{reward} {reward_type}")
+
+                # Handle ticket-based spins
+                if self.USE_TICKET_TO_SPIN:
+                    self.log(f"{biru}start spin using ticket !")
+                    while True:
+                        if tickets < spin_using_ticket_price:
+                            self.log(f"{kuning}not enough tickets for spin !")
+                            break
+
+                        if spin_using_ticket_price > self.MAX_USE_TICKET:
+                            self.log(f"{kuning}max using ticket to spin reached !")
+                            break
+
+                        res = self.http(self.url_api_gamee, headers, buy_spin_using_ticket)
+                        if "error" in res.json().keys():
+                            msg = res.json()["error"].get("message", "").lower()
+                            if msg == "not enough tickets":
+                                self.log(f"{kuning}not enough tickets for spin !")
+                            elif msg == "too many requests":
+                                self.log(f"{kuning}too many requests, skipping spin !")
+                            else:
+                                self.log(f"{merah}unexpected error: {msg}")
+                            break  # Skip to the next account on failure
+
+                        res = self.http(self.url_api_gamee, headers, daily_reward_claim_prize)
+                        reward_type = res.json()["result"]["reward"]["type"]
+                        key = "usdCents" if reward_type == "money" else reward_type
+                        reward = res.json()["result"]["reward"][key]
+                        self.log(f"{hijau}reward spin : {putih}{reward} {reward_type}")
+
+                        # Recheck the spin and ticket details
+                        res = self.http(self.url_api_gamee, headers, daily_get_price)
+                        daily_spin = res.json()["result"]["dailyReward"]["spinsCountAvailable"]
+                        spin_using_ticket_price = res.json()["result"]["dailyReward"]["dailyRewardBonusSpinsPriceTickets"]
+                        tickets = res.json()["user"]["tickets"]["count"]
+
+                        self.log(f"{hijau}available ticket : {putih}{tickets}")
+                        self.log(f"{hijau}available free spin : {putih}{daily_spin}")
+                        self.log(f"{hijau}price to spin : {putih}{spin_using_ticket_price} {hijau}ticket")
+
+                        if daily_spin <= 0 and tickets < spin_using_ticket_price:
+                            self.log(f"{kuning}no more spins available and not enough tickets, skipping spin !")
+                            break
+
+                        if tickets < spin_using_ticket_price:
+                            self.log(f"{kuning}not enough tickets for spin !")
+                            break
+
+                        time.sleep(10)  # Delay to avoid rapid API calls
+
+                return
+
+            except KeyError as e:
+                self.log(f"{merah}KeyError: {e}")
+                break  # Skip to the next account on failure
+
+            except Exception as e:
+                self.log(f"{merah}Unexpected error: {e}")
+                break  # Skip to the next account on failure
 
     def gamee_mining_page(self, access_token, uuid):
         headers = {
@@ -266,7 +276,7 @@ class Gamee:
         self.log(f"{putih}max mining : {hijau}{earn}")
         self.log(f"{putih}current mining : {hijau}{mine}")
         if end:
-            self.log(f"{kuning}mining has end !")
+            self.log(f"{kuning}mining has ended !")
             headers["content-length"] = str(len(json.dumps(data_start_mining)))
             while True:
                 res = self.http(
@@ -365,13 +375,12 @@ class Gamee:
                 if is_expired:
                     access_token = self.gamee_login(data, uid)
 
-                res = self.gamee_spin(access_token, uid)
-                res = self.gamee_mining_page(access_token, uid)
+                self.gamee_spin(access_token, uid)
+                self.gamee_mining_page(access_token, uid)
                 print(self.line)
                 self.countdown(self.DEFAULT_INTERVAL)
 
             self.countdown(self.DEFAULT_COUNTDOWN)
-
 
 if __name__ == "__main__":
     try:
