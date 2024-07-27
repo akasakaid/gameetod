@@ -20,8 +20,25 @@ Auto Claim Wat Point from gamee
 - [Javascript Command to Get Telegram Data for Desktop](#javascript-command-to-get-telegram-data-for-desktop)
 - [Run for 24/7](#run-for-247)
 - [Discussion](#discussion)
-- [Support](#support)
+- [Support My Work](#support-my-work)
 - [Thank you \< 3](#thank-you--3)
+
+<!-- # My Note
+
+```text
+Sorry, I can't add the feature to complete the 'race' because my device doesn't support it. 
+When I press the play button, it only shows a black blank (like picture number 1), then I asked someone and he replied “maybe your internet is problematic”. Then I waited until this morning and I tried again but still couldn't.
+Then I tried to see the console menu and it turned out that there was an error (as shown in picture number 2) that my device did not support playing the game.
+So I only updated for mining action, maybe I will update for “racing” action later when I buy rdp (Remote Desktop Protocol / Windows Server) or buy a new device.
+That's all, thank you.
+```
+## Image 1
+
+<img src="./images/black_blank_image.png" width="300" height="500">
+
+## Image 2
+
+<img src="./images/console_error_image.png" width="500" height="300"> -->
 
 # Feature
 
@@ -29,6 +46,7 @@ Auto Claim Wat Point from gamee
 - [x] Auto Daily Spin
 - [x] Spin Using Ticket
 - [x] Support Multi Account
+- [x] Claim Previous Session Mining Rewards
 
 # Register ?
 
@@ -190,12 +208,15 @@ You can run the script bot for 24/7 using vps / rdp. You can use `screen` applic
 
 If you have an question or something you can ask in here : [@sdsproject_chat](https://t.me/sdsproject_chat)
 
-# Support
+# Support My Work
 
 To support me you can buy me a coffee via website in below
 
 - Send IDR directly via QRIS : [https://s.id/nusanqr](https://s.id/nusanqr)
-- https://trakteer.id/fawwazthoerif/tip
 - https://sociabuzz.com/fawwazthoerif/tribe
+- USDT (TRC20)
+  ```
+  TZANkbi8z22cEpkpWfJ1F6H84r9DA19Es1
+  ```
 
 # Thank you < 3
