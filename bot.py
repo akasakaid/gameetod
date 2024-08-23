@@ -95,7 +95,7 @@ class GameeTod:
                     res = await self.ses.post(url)
                 else:
                     res = await self.ses.post(url, data=data)
-                async with aiofiles.open("http.log", "a") as hw:
+                async with aiofiles.open("http.log", "a",encoding='utf-8') as hw:
                     await hw.write(f"{res.text}\n")
                 if "<title>" in res.text:
                     self.log(f"{kuning}failed get response json !")
