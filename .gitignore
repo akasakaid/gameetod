@@ -12,3 +12,4 @@ sessions
 !config.json
 !tokens.json
 __pycache__
+!proxies.txt
